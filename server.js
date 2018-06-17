@@ -6,9 +6,6 @@ var http = require('http')
 var request = require('superagent')
 var _ = require('lodash')
 
-
-
-
 const bot = new Bot({
     token: process.env.PAGE_TOKEN,
     verify: process.env.VERIFY_TOKEN,
@@ -46,37 +43,48 @@ bot.on('postback', (payload) => {
 bot.on('message', (payload, reply) => {
     const message = payload.message.text;
     const senderId = payload.sender.id;
-    
-    const newsSites = {
-      NYT: {
-        names : ["nyt","NYT","Nyt"],
-        site : "https://www.nytimes.com/",
-        source : "the-new-york-times"
-      }, 
-      CNN: {
-        names : ["cnn","CNN","Cnn"],
-        site : "https://www.cnn.com/",
-        source : "cnn"
-      },
-      Bloomberg: {
-        names : ["bb","Bloomberg","bloomberg"],
-        site : "https://www.bloomberg.com/",
-        source : "bloomberg"
-      },
-      TechCrunch: {
-        names : ["techcrunch","Techcrunch","TechCrunch"],
-        site : "https://techcrunch.com",
-        source : "techcrunch"
-      },
-      TechRadar: {
-        names : ["techradar","Techradar","TechRadar"],
-        site : "https://techradar.com",
-        source : "techradar"
-      },
-    };
-  
 
-    
+    const newsSites = {
+        NYT: {
+            names: ["nyt", "NYT", "Nyt"],
+            site: "https://www.nytimes.com/",
+            source: "the-new-york-times"
+        },
+        CNN: {
+            names: ["cnn", "CNN", "Cnn"],
+            site: "https://www.cnn.com/",
+            source: "cnn"
+        },
+        Bloomberg: {
+            names: ["bb", "Bloomberg", "bloomberg"],
+            site: "https://www.bloomberg.com/",
+            source: "bloomberg"
+        },
+        TechCrunch: {
+            names: ["techcrunch", "Techcrunch", "TechCrunch"],
+            site: "https://techcrunch.com",
+            source: "techcrunch"
+        },
+        TechRadar: {
+            names: ["techradar", "Techradar", "TechRadar"],
+            site: "https://techradar.com",
+            source: "techradar"
+        },
+        ABC: {
+            names: ["abc", "ABC", "ABC News"],
+            site: "https://abcnews.go.com/",
+            source: "abc-news"
+        },
+        BBC: {
+            names: ["bbc", "BBC", "BBC News"],
+            site: "https://www.bbc.com/news",
+            source: "bbc-news"
+        },
+      
+    };
+
+
+
     if (message === 'all' || message === 'All' || message === 'ALL' || message === 'headlines' || message === 'Headlines') {
         const NYTUrl = 'https://newsapi.org/v1/articles?source=the-new-york-times&sortBy=top&apiKey=52a36d98da214f98a9b9b9bfaba502a7'
         const CNNUrl = 'https://newsapi.org/v1/articles?source=cnn&sortBy=top&apiKey=52a36d98da214f98a9b9b9bfaba502a7'
@@ -111,8 +119,8 @@ bot.on('message', (payload, reply) => {
                     }]
                 }
 
-                elements.push(element)
-                // console.log(1)
+                elements.push(element);
+
                 request
                     .get(CNNUrl)
                     .end((error, result) => {
@@ -137,8 +145,7 @@ bot.on('message', (payload, reply) => {
                                 "url": article.url
                             }]
                         }
-                        elements.push(element)
-                        // console.log(2)
+                        elements.push(element);
 
                         request
                             .get(BBUrl)
@@ -166,7 +173,6 @@ bot.on('message', (payload, reply) => {
                                 }
 
                                 elements.push(element)
-                                // console.log(3)
 
                                 request
                                     .get(TechCrunchUrl)
@@ -194,52 +200,24 @@ bot.on('message', (payload, reply) => {
                                         }
 
                                         elements.push(element)
-                                        // console.log(4)
 
-                                        request
-                                            .get(TechRadarUrl)
-                                            .end((error, result) => {
-                                                const article = result.body.articles[0]
-                                                var element = {
-                                                    "title": article.title,
-                                                    "image_url": article.urlToImage || 'https://cdn3.iconfinder.com/data/icons/linecons-free-vector-icons-pack/32/news-128.png',
-                                                    //Subtitle limit is 80 characters
-                                                    "subtitle": _.truncate(
-                                                        article.description, {
-                                                            length: 80,
-                                                            separator: '...'
-                                                        }
-                                                    ),
-                                                    "default_action": {
-                                                        "type": "web_url",
-                                                        "url": article.url
-                                                    },
+                                        bot.sendMessage(senderId, {
+                                            "attachment": {
+                                                "type": "template",
+                                                "payload": {
+                                                    "template_type": "list",
+                                                    "elements": elements,
                                                     "buttons": [{
-                                                        "title": "Read More",
+                                                        "title": "More Headlines",
                                                         "type": "web_url",
-                                                        "url": article.url
+                                                        "url": "https://m.1stheadlines.com/"
                                                     }]
                                                 }
+                                            }
+                                        })
 
-                                                // elements.push(element)
-                                                // console.log(elements)
 
-                                                bot.sendMessage(senderId, {
-                                                    "attachment": {
-                                                        "type": "template",
-                                                        "payload": {
-                                                            "template_type": "list",
-                                                            "elements": elements,
-                                                            "buttons": [{
-                                                                "title": "More Headlines",
-                                                                "type": "web_url",
-                                                                "url": "https://m.1stheadlines.com/"
-                                                            }]
-                                                        }
-                                                    }
-                                                })
 
-                                            })
                                     })
                             })
 
@@ -249,56 +227,56 @@ bot.on('message', (payload, reply) => {
 
     }
     else {
-      for (const newsSite in newsSites) {       
-        
-        if (message === newsSites[newsSite].names[0] || message === newsSites[newsSite].names[1] || message === newsSites[newsSite].names[2]) {
-          const apiUrl = 'https://newsapi.org/v1/articles?source='+ newsSites[newsSite].source +'&sortBy=top&apiKey=52a36d98da214f98a9b9b9bfaba502a7'
+        for (const newsSite in newsSites) {
 
-          request
-              .get(apiUrl)
-              .end((error, result) => {
-                  const articles = result.body.articles
+            if (message === newsSites[newsSite].names[0] || message === newsSites[newsSite].names[1] || message === newsSites[newsSite].names[2]) {
+                const apiUrl = 'https://newsapi.org/v1/articles?source=' + newsSites[newsSite].source + '&sortBy=top&apiKey=52a36d98da214f98a9b9b9bfaba502a7'
 
-                  const elements = _.map(articles, (article) => {
-                      return {
-                          "title": article.title,
-                          "image_url": article.urlToImage || 'https://cdn3.iconfinder.com/data/icons/linecons-free-vector-icons-pack/32/news-128.png',
-                          //Subtitle limit is 80 characters
-                          "subtitle": _.truncate(
-                              article.description, {
-                                  length: 80,
-                                  separator: '...'
-                              }
-                          ),
-                          "default_action": {
-                              "type": "web_url",
-                              "url": article.url
-                          },
-                          "buttons": [{
-                              "title": "Read More",
-                              "type": "web_url",
-                              "url": article.url
-                          }]
-                      }
-                  }).slice(0, 4)
+                request
+                    .get(apiUrl)
+                    .end((error, result) => {
+                        const articles = result.body.articles
 
-                  bot.sendMessage(senderId, {
-                      "attachment": {
-                          "type": "template",
-                          "payload": {
-                              "template_type": "list",
-                              "elements": elements,
-                              "buttons": [{
-                                  "title": "More "+ newsSite +" News",
-                                  "type": "web_url",
-                                  "url": newsSites[newsSite].site
-                              }]
-                          }
-                      }
-                  })
-              })
+                        const elements = _.map(articles, (article) => {
+                            return {
+                                "title": article.title,
+                                "image_url": article.urlToImage || 'https://cdn3.iconfinder.com/data/icons/linecons-free-vector-icons-pack/32/news-128.png',
+                                //Subtitle limit is 80 characters
+                                "subtitle": _.truncate(
+                                    article.description, {
+                                        length: 80,
+                                        separator: '...'
+                                    }
+                                ),
+                                "default_action": {
+                                    "type": "web_url",
+                                    "url": article.url
+                                },
+                                "buttons": [{
+                                    "title": "Read More",
+                                    "type": "web_url",
+                                    "url": article.url
+                                }]
+                            }
+                        }).slice(0, 4)
+
+                        bot.sendMessage(senderId, {
+                            "attachment": {
+                                "type": "template",
+                                "payload": {
+                                    "template_type": "list",
+                                    "elements": elements,
+                                    "buttons": [{
+                                        "title": "More " + newsSite + " News",
+                                        "type": "web_url",
+                                        "url": newsSites[newsSite].site
+                                    }]
+                                }
+                            }
+                        })
+                    })
+            }
         }
-      }
     }
 
 })
