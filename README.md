@@ -2,7 +2,7 @@
 
 A simple chat bot built with Node JS on Glitch that provides the headlines popular news websites (eg. NYT, CNN, Bloomberg). Code was adapted from the following [tutorial](https://blog.z-dev.io/build-a-facebook-bot-in-glitch-c39ca1609a9b) by Alex Smith. 
 
-Code is stored on Glitch as [fb-news](https://glitch.com/edit/#!/fb-news).
+Code is hosted on Glitch as [fb-news](https://glitch.com/edit/#!/fb-news).
 
 ## Installation
 No installation necessary. You will only need a modern web browser.
