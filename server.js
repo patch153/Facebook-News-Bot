@@ -1,6 +1,7 @@
 // server.js
 // where your node app starts
 // init project
+// http://jsbeautifier.org/
 var Bot = require('messenger-bot')
 var http = require('http')
 var request = require('superagent')
@@ -13,9 +14,67 @@ const bot = new Bot({
 })
 
 const users = {}
+
+const newsSites = {
+    NYT: {
+        names: ["nyt", "NYT", "Nyt"],
+        site: "https://www.nytimes.com/",
+        source: "the-new-york-times"
+    },
+    CNN: {
+        names: ["cnn", "CNN", "Cnn"],
+        site: "https://www.cnn.com/",
+        source: "cnn"
+    },
+    Bloomberg: {
+        names: ["bb", "Bloomberg", "bloomberg"],
+        site: "https://www.bloomberg.com/",
+        source: "bloomberg"
+    },
+    TechCrunch: {
+        names: ["techcrunch", "Techcrunch", "TechCrunch"],
+        site: "https://techcrunch.com",
+        source: "techcrunch"
+    },
+    TechRadar: {
+        names: ["techradar", "Techradar", "TechRadar"],
+        site: "https://techradar.com",
+        source: "techradar"
+    },
+    ABC: {
+        names: ["abc", "ABC", "ABC News"],
+        site: "https://abcnews.go.com/",
+        source: "abc-news"
+    },
+    BBC: {
+        names: ["bbc", "BBC", "BBC News"],
+        site: "https://www.bbc.com/news",
+        source: "bbc-news"
+    },
+
+};
+
+bot.setGetStartedButton([{
+    "payload": "1"
+}], (result1, result2) => console.log("getStarted", result1, result2));
+
+bot.setPersistentMenu([{
+        "title": "Headlines",
+        "type": "postback",
+        "payload": "Headlines"
+    },
+    {
+        "title": "CNN",
+        "type": "postback",
+        "payload": "CNN"
+    }
+
+], (result1, result2) => console.log("getStarted", result1, result2));
+
 bot.on('postback', (payload) => {
+    const senderId = payload.sender.id;
     if (payload.postback.payload === 'GET_STARTED_PAYLOAD') {
-        const senderId = payload.sender.id
+
 
         console.log(senderId)
 
@@ -38,52 +97,25 @@ bot.on('postback', (payload) => {
             console.log(`${profile.first_name} ${profile.last_name} => users`)
         })
     }
+
+    handleResponse(payload, payload.postback.payload);
 })
 
-bot.on('message', (payload, reply) => {
-    const message = payload.message.text;
+
+
+bot.on('message', (payload) => {
+    handleResponse(payload, payload.message.text);
+
+
+
+
+})
+
+http.createServer(bot.middleware()).listen(3000)
+console.log('Echo bot server running at port 3000.')
+
+function handleResponse(payload, message) {
     const senderId = payload.sender.id;
-
-    const newsSites = {
-        NYT: {
-            names: ["nyt", "NYT", "Nyt"],
-            site: "https://www.nytimes.com/",
-            source: "the-new-york-times"
-        },
-        CNN: {
-            names: ["cnn", "CNN", "Cnn"],
-            site: "https://www.cnn.com/",
-            source: "cnn"
-        },
-        Bloomberg: {
-            names: ["bb", "Bloomberg", "bloomberg"],
-            site: "https://www.bloomberg.com/",
-            source: "bloomberg"
-        },
-        TechCrunch: {
-            names: ["techcrunch", "Techcrunch", "TechCrunch"],
-            site: "https://techcrunch.com",
-            source: "techcrunch"
-        },
-        TechRadar: {
-            names: ["techradar", "Techradar", "TechRadar"],
-            site: "https://techradar.com",
-            source: "techradar"
-        },
-        ABC: {
-            names: ["abc", "ABC", "ABC News"],
-            site: "https://abcnews.go.com/",
-            source: "abc-news"
-        },
-        BBC: {
-            names: ["bbc", "BBC", "BBC News"],
-            site: "https://www.bbc.com/news",
-            source: "bbc-news"
-        },
-      
-    };
-
-
 
     if (message === 'all' || message === 'All' || message === 'ALL' || message === 'headlines' || message === 'Headlines') {
         const NYTUrl = 'https://newsapi.org/v1/articles?source=the-new-york-times&sortBy=top&apiKey=52a36d98da214f98a9b9b9bfaba502a7'
@@ -278,8 +310,4 @@ bot.on('message', (payload, reply) => {
             }
         }
     }
-
-})
-
-http.createServer(bot.middleware()).listen(3000)
-console.log('Echo bot server running at port 3000.')
+}
